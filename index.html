@@ -1,821 +1,827 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Twistify</title>
-  <style>
-    /* --------------------
-    * RESET & BASICS
-    * -------------------- */
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Amazon Ember', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #0f171e;
-      color: #fff;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      overflow-y: scroll;
-    }
-    header {
-      background-color: #141f2d;
-      padding: 1rem 2rem;
-      font-size: 1.9rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: #e100a8; /* Changed color to pinkish purple for Twistify */
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      user-select: none;
-      border-bottom: 1px solid #1e2a3b;
-    }
-    header::before {
-      content: "Twist";
-      font-weight: 900;
-      font-size: 2.6rem;
-      color: #e100a8; /* Changed color to pinkish purple for Twistify */
-      font-family: 'Amazon Ember', 'Segoe UI Black', Arial Black, sans-serif;
-      letter-spacing: 0.15em;
-      margin-right: 6px;
-    }
-
-    /* --------------------
-    * SEARCH & SORTING BAR
-    * -------------------- */
-    #searchContainer {
-      background-color: #141f2d;
-      padding: 12px 2rem;
-      border-bottom: 1px solid #1e2a3b;
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      position: sticky;
-      top: 0;
-      z-index: 15;
-    }
-    #searchInput {
-      flex: 1 1 300px;
-      max-width: 600px;
-      padding: 12px 16px;
-      font-size: 1rem;
-      border-radius: 30px;
-      border: none;
-      outline: none;
-      background-color: #263748;
-      color: #cfd8dc;
-      box-shadow: inset 0 0 5px #e100a8; /* Updated box-shadow color */
-      transition: background-color 0.3s ease;
-    }
-    #searchInput::placeholder {
-      color: #78909c;
-    }
-    #searchInput:focus {
-      background-color: #1b2a3d;
-      box-shadow: 0 0 10px #e100a8; /* Updated box-shadow color */
-      color: #fff;
-    }
-    select {
-      background-color: #263748;
-      border: none;
-      border-radius: 30px;
-      padding: 10px 16px;
-      font-size: 1rem;
-      color: #cfd8dc;
-      box-shadow: inset 0 0 5px #e100a8; /* Updated box-shadow color */
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      min-width: 140px;
-    }
-    select:hover,
-    select:focus {
-      background-color: #1b2a3d;
-      box-shadow: 0 0 10px #e100a8; /* Updated box-shadow color */
-      color: #fff;
-      outline: none;
-    }
-
-    /* --------------------
-    * MOVIE GRID
-    * -------------------- */
-    .movie-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1.3rem;
-      padding: 2rem 2rem 3rem;
-      max-width: 1300px;
-      margin: auto;
-    }
-    .movie-card {
-      background-color: #1f2a3d;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(225, 0, 168, 0.3); /* Updated box-shadow color */
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-      outline-offset: 3px;
-      border: 2px solid transparent;
-    }
-    .movie-card:hover,
-    .movie-card:focus {
-      transform: scale(1.07);
-      box-shadow: 0 10px 25px #e100a8cc; /* Updated box-shadow color */
-      border-color: #e100a8; /* Updated border color */
-      z-index: 20;
-      outline: none;
-    }
-    .movie-card img {
-      width: 100%;
-      aspect-ratio: 2/3;
-      object-fit: cover;
-      display: block;
-      border-bottom: 4px solid #e100a8; /* Updated border color */
-      transition: filter 0.3s ease;
-    }
-    .movie-card:hover img,
-    .movie-card:focus img {
-      filter: brightness(1.1);
-    }
-    .movie-info {
-      padding: 0.7rem 0.9rem;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      color: #a4cbe3;
-    }
-    .movie-title {
-      font-weight: 700;
-      font-size: 1.05rem;
-      margin-bottom: 6px;
-      color: #e100a8; /* Updated title color */
-      text-shadow: 0 0 6px #7b007388; /* Updated text-shadow color */
-      user-select: none;
-    }
-    .movie-meta {
-      font-size: 0.85rem;
-      display: flex;
-      justify-content: space-between;
-      color: #a4cbe3;
-      letter-spacing: 0.03em;
-      font-weight: 600;
-      gap: 0.3rem;
-      flex-wrap: wrap;
-    }
-    .genre,
-    .language {
-      background-color: #4a0040; /* Updated background color */
-      padding: 2px 7px;
-      border-radius: 12px;
-      box-shadow: 0 0 5px #7b0073; /* Updated box-shadow color */
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      user-select: none;
-    }
-    .rating {
-      color: #ffd700;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-    }
-
-    /* --------------------
-    * MODAL
-    * -------------------- */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 30, 0.95);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      z-index: 999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      font-family: 'Amazon Ember', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .modal.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .modal-content {
-      background-color: #152533;
-      border-radius: 12px;
-      max-width: 720px;
-      width: 100%;
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 2rem 3rem;
-      position: relative;
-      color: #cfd8dc;
-      box-shadow: 0 0 30px #e100a8; /* Updated box-shadow color */
-      border: 1.5px solid #e100a8; /* Updated border color */
-    }
-    .modal-close {
-      position: absolute;
-      top: 1rem;
-      right: 1.5rem;
-      font-size: 2.6rem;
-      font-weight: 700;
-      color: #e100a8; /* Updated color */
-      cursor: pointer;
-      transition: color 0.3s ease;
-      user-select: none;
-      line-height: 1;
-      background: none;
-      border: none;
-    }
-    .modal-close:hover {
-      color: #ff40c0; /* Updated hover color */
-    }
-    .modal-content h2 {
-      margin-top: 0;
-      margin-bottom: 1rem;
-      font-weight: 800;
-      font-size: 2.5rem;
-      color: #e100a8; /* Updated title color */
-      text-shadow: 0 0 8px #7b0073; /* Updated text-shadow color */
-      letter-spacing: 0.05em;
-    }
-    .modal-content p.description {
-      line-height: 1.5;
-      font-size: 1.2rem;
-      margin-bottom: 1.2rem;
-    }
-    .modal-meta {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1.8rem;
-      font-weight: 600;
-      font-size: 1rem;
-      color: #a4cbe3;
-      letter-spacing: 0.05em;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .modal-meta .genre,
-    .modal-meta .language {
-      padding: 4px 12px;
-      font-size: 0.85rem;
-      border-radius: 16px;
-      background: #4a0040; /* Updated background color */
-      box-shadow: 0 0 10px #7b0073; /* Updated box-shadow color */
-      text-transform: uppercase;
-    }
-    .modal-meta .rating {
-      color: #ffd700;
-      font-weight: 900;
-      font-size: 1.1rem;
-    }
-
-    /* --------------------
-    * SPOILER STYLE
-    * -------------------- */
-    .spoiler {
-      background-color: #223344;
-      color: transparent;
-      text-shadow: 0 0 6px #223344;
-      cursor: pointer;
-      user-select: none;
-      display: inline-block;
-      border-radius: 3px;
-      padding: 0 3px;
-      transition: color 0.3s ease, text-shadow 0.3s ease;
-      font-size: 1.3rem; /* Made spoiler text bigger */
-      font-weight: 600;
-    }
-    .spoiler.revealed {
-      color: #ff4444;
-      text-shadow: 0 0 8px #ff4444;
-      cursor: default;
-      background-color: transparent;
-    }
-    .spoiler-emoji {
-      margin-left: 6px;
-    }
-
-    /* --------------------
-    * RESPONSIVE
-    * -------------------- */
-    @media (max-width: 600px) {
-      .movie-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        padding: 1rem 1rem 2rem;
-      }
-      header {
-        font-size: 1.5rem;
-      }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Twistify</title>
+    <style>
+        /* --------------------
+        * RESET & BASICS
+        * -------------------- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: 'Amazon Ember', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333; /* Dark gray text */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-y: scroll;
+        }
+        header {
+            background-color: #fff;
+            padding: 1rem 2rem;
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #e100a8;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            user-select: none;
+            border-bottom: 1px solid #ddd;
+        }
+        header::before {
+            content: "Twist";
+            font-weight: 900;
+            font-size: 2.6rem;
+            color: #e100a8;
+            font-family: 'Amazon Ember', 'Segoe UI Black', Arial Black, sans-serif;
+            letter-spacing: 0.15em;
+            margin-right: 6px;
+        }
+        /* --------------------
+        * SEARCH & SORTING BAR
+        * -------------------- */
+        #searchContainer {
+            background-color: #fff;
+            padding: 12px 2rem;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 15;
+        }
+        #searchInput {
+            flex: 1 1 300px;
+            max-width: 600px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border-radius: 30px;
+            border: 1px solid #ccc;
+            outline: none;
+            background-color: #f9f9f9;
+            color: #333;
+            box-shadow: inset 0 0 5px #e100a8;
+            transition: background-color 0.3s ease;
+        }
+        #searchInput::placeholder {
+            color: #777;
+        }
+        #searchInput:focus {
+            background-color: #fff;
+            box-shadow: 0 0 10px #e100a8;
+            color: #333;
+        }
+        select {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            color: #333;
+            box-shadow: inset 0 0 5px #e100a8;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 140px;
+        }
+        select:hover,
+        select:focus {
+            background-color: #fff;
+            box-shadow: 0 0 10px #e100a8;
+            color: #333;
+            outline: none;
+        }
+        /* --------------------
+        * MOVIE GRID
+        * -------------------- */
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.3rem;
+            padding: 2rem 2rem 3rem;
+            max-width: 1300px;
+            margin: auto;
+        }
+        .movie-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            outline-offset: 3px;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        .movie-card:hover,
+        .movie-card:focus {
+            transform: scale(1.07);
+            box-shadow: 0 10px 25px rgba(225, 0, 168, 0.4);
+            border-color: #e100a8;
+            z-index: 20;
+            outline: none;
+        }
+        .movie-card img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            display: block;
+            border-bottom: 4px solid #e100a8;
+            transition: filter 0.3s ease;
+        }
+        .movie-card:hover img,
+        .movie-card:focus img {
+            filter: brightness(1.1);
+        }
+        .movie-info {
+            padding: 0.7rem 0.9rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #555;
+        }
+        .movie-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+            color: #e100a8;
+            text-shadow: 0 0 6px rgba(123, 0, 115, 0.1);
+            user-select: none;
+        }
+        .movie-meta {
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+        .genre,
+        .language {
+            background-color: #f0e6f2;
+            padding: 2px 7px;
+            border-radius: 12px;
+            box-shadow: 0 0 5px #ccc;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            user-select: none;
+            color: #e100a8;
+        }
+        .rating {
+            color: #ffd700;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+        }
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background-color: rgba(225, 0, 168, 0.85);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+        .movie-card:hover .play-button {
+            opacity: 1;
+        }
+        .play-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .play-button::before {
+            content: '▶';
+            color: white;
+            font-size: 2rem;
+            transform: translateX(3px);
+        }
+        /* --------------------
+        * MODAL
+        * -------------------- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(240, 242, 245, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            font-family: 'Amazon Ember', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background-color: #fff;
+            border-radius: 12px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem 3rem;
+            position: relative;
+            color: #333;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            border: 1.5px solid #e100a8;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #e100a8;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            user-select: none;
+            line-height: 1;
+            background: none;
+            border: none;
+        }
+        .modal-close:hover {
+            color: #ff40c0;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            font-size: 2.5rem;
+            color: #e100a8;
+            text-shadow: 0 0 8px rgba(123, 0, 115, 0.2);
+            letter-spacing: 0.05em;
+        }
+        .modal-content p.description {
+            line-height: 1.5;
+            font-size: 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+        .modal-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.8rem;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #777;
+            letter-spacing: 0.05em;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .modal-meta .genre,
+        .modal-meta .language {
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            border-radius: 16px;
+            background: #f0e6f2;
+            box-shadow: 0 0 10px rgba(123, 0, 115, 0.2);
+            text-transform: uppercase;
+            color: #e100a8;
+        }
+        .modal-meta .rating {
+            color: #ffd700;
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+        /* --------------------
+        * SPOILER STYLE
+        * -------------------- */
+        .spoiler {
+            background-color: #e0e0e0;
+            color: transparent;
+            text-shadow: 0 0 6px #e0e0e0;
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            border-radius: 3px;
+            padding: 0 3px;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .spoiler.revealed {
+            color: #c0392b;
+            text-shadow: 0 0 8px #c0392b;
+            cursor: default;
+            background-color: transparent;
+        }
+        .spoiler-emoji {
+            margin-left: 6px;
+        }
+        /* --------------------
+        * RESPONSIVE
+        * -------------------- */
+        @media (max-width: 600px) {
+            .movie-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                padding: 1rem 1rem 2rem;
+            }
+            header {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>Twistify</header>
-
-  <div id="searchContainer">
-    <input type="search" id="searchInput" placeholder="Search movies..." aria-label="Search movies" />
-    <select id="sortSelect" aria-label="Sort movies">
-      <option value="title">Sort by Title</option>
-      <option value="genre">Sort by Genre</option>
-      <option value="rating">Sort by Rating</option>
-      <option value="language">Sort by Language</option>
-    </select>
-  </div>
-
-  <main>
-    <div class="movie-grid" id="movieGrid" role="list" aria-label="List of movies"></div>
-  </main>
-
-  <div class="modal" id="movieModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-content">
-      <audio id="spoilerSound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
-      <button class="modal-close" id="modalClose" aria-label="Close modal">&times;</button>
-      <h2 id="modalTitle"></h2>
-      <div class="modal-meta" id="modalMeta"></div>
-      <p class="description" id="modalDescription"></p>
+    <header>Twistify</header>
+    <div id="searchContainer">
+        <input type="search" id="searchInput" placeholder="Search movies..." aria-label="Search movies" />
+        <select id="sortSelect" aria-label="Sort movies">
+            <option value="title">Sort by Title</option>
+            <option value="genre">Sort by Genre</option>
+            <option value="rating">Sort by Rating</option>
+            <option value="language">Sort by Language</option>
+        </select>
     </div>
-  </div>
-
-  <script>
-    const movies = [
-      {
-        id: 1,
-        title: "Inception",
-        genre: "Sci-Fi",
-        rating: 8.8,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/51oD2MsvytL._AC_.jpg",
-        description: "A thief who steals corporate secrets through the use of dream-sharing technology. <span class='spoiler'>Spoiler: Cobb reunites with his kids.</span>"
-      },
-      {
-        id: 2,
-        title: "Parasite",
-        genre: "Thriller",
-        rating: 8.6,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/71c05lTE03L._AC_SY679_.jpg",
-        description: "Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan."
-      },
-      {
-        id: 3,
-        title: "The Dark Knight",
-        genre: "Action",
-        rating: 9.0,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/51K8ouYrHeL._AC_.jpg",
-        description: "Batman raises the stakes in his war on crime. <span class='spoiler'>Spoiler: Joker kills Harvey Dent.</span>"
-      },
-      {
-        id: 4,
-        title: "Amélie",
-        genre: "Romance",
-        rating: 8.3,
-        language: "French",
-        image: "https://m.media-amazon.com/images/I/51pkUrYf3JL._AC_.jpg",
-        description: "Amélie is an innocent and naive girl in Paris with her own sense of justice."
-      },
-      {
-        id: 5,
-        title: "Spirited Away",
-        genre: "Animation",
-        rating: 8.6,
-        language: "Japanese",
-        image: "https://m.media-amazon.com/images/I/51nk1kx5o6L._AC_.jpg",
-        description: "During her family's move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits."
-      },
-      {
-        id: 11,
-        title: "Get Out",
-        genre: "Horror/Thriller",
-        rating: 7.7,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/81bxt5F3sHL._AC_SY679_.jpg",
-        description: "A young Black man uncovers a disturbing secret when he meets his white girlfriend’s family. <span class='spoiler'>Spoiler: The family transplants their consciousness into others’ bodies.</span>"
-      },
-      {
-        id: 12,
-        title: "The Sixth Sense",
-        genre: "Thriller/Mystery",
-        rating: 8.1,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/81p+xe8cbnL._AC_SY679_.jpg",
-        description: "A child psychologist works with a boy who claims he can see dead people. <span class='spoiler'>Spoiler: The psychologist is dead the whole time.</span>"
-      },
-      {
-        id: 13,
-        title: "Hereditary",
-        genre: "Horror",
-        rating: 7.3,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/91B3yfNl0HL._AC_SY679_.jpg",
-        description: "A grieving family is haunted by mysterious and disturbing occurrences. <span class='spoiler'>Spoiler: The family is manipulated by a cult worshiping a demon.</span>"
-      },
-      {
-        id: 14,
-        title: "The Shining",
-        genre: "Horror",
-        rating: 8.4,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/51NpxX3FhuL._AC_SY679_.jpg",
-        description: "A man slowly descends into madness while isolated in a haunted hotel with his family. <span class='spoiler'>Spoiler: Jack tries to kill his family under the influence of the hotel's spirits.</span>"
-      },
-      {
-        id: 15,
-        title: "Gone Girl",
-        genre: "Thriller/Crime",
-        rating: 8.1,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/71K9CbNZPsL._AC_SY679_.jpg",
-        description: "A husband becomes the prime suspect when his wife mysteriously disappears. <span class='spoiler'>Spoiler: The wife fakes her disappearance to frame her husband.</span>"
-      },
-      {
-        id: 16,
-        title: "Midsommar",
-        genre: "Horror/Drama",
-        rating: 7.1,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/91HTqipFgtL._AC_SY679_.jpg",
-        description: "A couple travels to Sweden to attend a rural festival, which turns out to be cult-like. <span class='spoiler'>Spoiler: The festival involves ritual sacrifices.</span>"
-      },
-      {
-        id: 17,
-        title: "Se7en",
-        genre: "Crime/Thriller",
-        rating: 8.6,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/71rtJWdGBPL._AC_SY679_.jpg",
-        description: "Two detectives hunt a serial killer who uses the seven deadly sins as motives. <span class='spoiler'>Spoiler: The killer turns himself in and orchestrates the final murders.</span>"
-      },
-      {
-        id: 18,
-        title: "Shutter Island",
-        genre: "Mystery/Thriller",
-        rating: 8.2,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/71ePvN6HqPL._AC_SY679_.jpg",
-        description: "A U.S. Marshal investigates a disappearance at a remote asylum. <span class='spoiler'>Spoiler: He is actually a patient at the asylum.</span>"
-      },
-      {
-        id: 19,
-        title: "Black Swan",
-        genre: "Psychological/Drama",
-        rating: 8.0,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/71VhQg3CZFL._AC_SY679_.jpg",
-        description: "A ballet dancer struggles with pressure and identity as she prepares for a major role. <span class='spoiler'>Spoiler: Her descent into madness blurs reality and hallucination.</span>"
-      },
-      {
-        id: 20,
-        title: "Oldboy",
-        genre: "Mystery/Thriller",
-        rating: 8.4,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/71d1OSyUKdL._AC_SY679_.jpg",
-        description: "A man is imprisoned for 15 years without explanation and seeks revenge after his release. <span class='spoiler'>Spoiler: He was manipulated into an incestuous relationship as revenge.</span>"
-      },
-      {
-        id: 21,
-        title: "Prisoners",
-        genre: "Crime/Thriller",
-        rating: 8.1,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/71VYMT4T54L._AC_SY679_.jpg",
-        description: "A father takes matters into his own hands after his daughter and her friend go missing. <span class='spoiler'>Spoiler: The real kidnapper is a woman who has been abducting children for years.</span>"
-      },
-      {
-        id: 22,
-        title: "The Girl with the Dragon Tattoo",
-        genre: "Mystery/Crime",
-        rating: 7.8,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/91lFeqybjeL._AC_SY679_.jpg",
-        description: "A journalist and a hacker investigate the disappearance of a wealthy industrialist’s niece. <span class='spoiler'>Spoiler: The girl was not killed — she escaped and started a new life.</span>"
-      },
-      {
-        id: 23,
-        title: "Donnie Darko",
-        genre: "Sci-Fi/Psychological",
-        rating: 8.0,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/51WTd8iCpmL._AC_SY679_.jpg",
-        description: "A troubled teenager is plagued by visions of a man in a rabbit suit who manipulates him to commit crimes. <span class='spoiler'>Spoiler: The film explores alternate timelines and ends with Donnie sacrificing himself to restore order.</span>"
-      },
-      {
-        id: 24,
-        title: "The Machinist",
-        genre: "Psychological Thriller",
-        rating: 7.6,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/51We6aRPl5L._AC_SY679_.jpg",
-        description: "An industrial worker who hasn't slept in a year begins to doubt his own sanity. <span class='spoiler'>Spoiler: His guilt over a hit-and-run causes his hallucinations and insomnia.</span>"
-      },
-      {
-        id: 25,
-        title: "Requiem for a Dream",
-        genre: "Drama/Psychological",
-        rating: 8.3,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/81wCn2o9tKL._AC_SY679_.jpg",
-        description: "Four people spiral into addiction, chasing different dreams and ultimately losing everything. <span class='spoiler'>Spoiler: Each character ends up in a tragic state — prison, amputation, mental hospital.</span>"
-      },
-      {
-        id: 26,
-        title: "Memories of Murder",
-        genre: "Crime/Drama",
-        rating: 8.1,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/71TkM1eIuOL._AC_SY679_.jpg",
-        description: "Two detectives try to solve a series of brutal murders in rural South Korea during the 1980s. <span class='spoiler'>Spoiler: The killer is never caught, and the case remains unsolved.</span>"
-      },
-      {
-        id: 27,
-        title: "Enemy",
-        genre: "Thriller/Mystery",
-        rating: 6.9,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/81dJOqUZ8zL._AC_SY679_.jpg",
-        description: "A man discovers someone who looks exactly like him and becomes obsessed with tracking him down. <span class='spoiler'>Spoiler: The doppelgänger may be a psychological projection of his own subconscious.</span>"
-      },
-      {
-        id: 28,
-        title: "Coherence",
-        genre: "Sci-Fi/Thriller",
-        rating: 7.2,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/61DpOX6NwFL._AC_SY679_.jpg",
-        description: "A dinner party goes awry as cosmic events cause alternate realities to overlap. <span class='spoiler'>Spoiler: Guests start swapping between realities, leading to confusion and paranoia.</span>"
-      },
-      {
-        id: 29,
-        title: "I Saw the Devil",
-        genre: "Horror/Thriller",
-        rating: 7.8,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/91rP-OSWGtL._AC_SY679_.jpg",
-        description: "A secret agent seeks revenge on the serial killer who murdered his fiancée. <span class='spoiler'>Spoiler: The agent captures and tortures the killer multiple times before finishing him in a brutal twist.</span>"
-      },
-      {
-        id: 30,
-        title: "The Handmaiden",
-        genre: "Drama/Thriller",
-        rating: 8.1,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/81QgZr9jeNL._AC_SY679_.jpg",
-        description: "A con man hires a woman to help him seduce and swindle a wealthy heiress — but things don’t go as planned. <span class='spoiler'>Spoiler: The women double-cross the man and escape together.</span>"
-      },
-      {
-        id: 31,
-        title: "Blue Velvet",
-        genre: "Mystery/Thriller",
-        rating: 7.7,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/81QjMzRnmYL._AC_SY679_.jpg",
-        description: "A college student uncovers a dark underworld after finding a severed ear in a field. <span class='spoiler'>Spoiler: A local detective is also involved in the town's corruption.</span>"
-      },
-      {
-        id: 32,
-        title: "Perfect Blue",
-        genre: "Psychological Thriller/Anime",
-        rating: 8.0,
-        language: "Japanese",
-        image: "https://m.media-amazon.com/images/I/81t-k0v9v8L._AC_SY679_.jpg",
-        description: "A pop idol turned actress struggles to maintain her sanity as she’s stalked by a fan and haunted by her past. <span class='spoiler'>Spoiler: The real threat is her manager, who has a delusional identity crisis.</span>"
-      },
-      {
-        id: 33,
-        title: "The Others",
-        genre: "Horror/Thriller",
-        rating: 7.6,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/81scsR4OUKL._AC_SY679_.jpg",
-        description: "A woman and her children live in a dark, eerie house — but something doesn’t feel right. <span class='spoiler'>Spoiler: They are ghosts, unknowingly haunting the new living family.</span>"
-      },
-      {
-        id: 34,
-        title: "Mother",
-        genre: "Crime/Drama",
-        rating: 7.8,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/61Sk+h+vQyL._AC_SY679_.jpg",
-        description: "A mother goes to extreme lengths to prove her son's innocence in a murder case. <span class='spoiler'>Spoiler: She discovers her son is actually guilty, and she covers it up.</span>"
-      },
-      {
-        id: 35,
-        title: "Burning",
-        genre: "Drama/Mystery",
-        rating: 7.5,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/71TWUsabvZL._AC_SY679_.jpg",
-        description: "A young man becomes suspicious of his childhood friend's new, mysterious boyfriend. <span class='spoiler'>Spoiler: The boyfriend is implied to be a serial killer — but it’s never confirmed.</span>"
-      },
-      {
-        id: 36,
-        title: "The Double",
-        genre: "Drama/Psychological",
-        rating: 6.5,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/61N6vprK1jL._AC_SY679_.jpg",
-        description: "A timid man’s life unravels when his confident doppelgänger begins to take over his world. <span class='spoiler'>Spoiler: The doppelgänger may be a manifestation of his fractured psyche.</span>"
-      },
-      {
-        id: 37,
-        title: "Stoker",
-        genre: "Drama/Thriller",
-        rating: 6.8,
-        language: "English",
-        image: "https://m.media-amazon.com/images/I/81QZZ5aOABL._AC_SY679_.jpg",
-        description: "After her father's death, a girl becomes fascinated by her mysterious and charming uncle. <span class='spoiler'>Spoiler: The uncle is a murderer who killed her father.</span>"
-      },
-      {
-        id: 38,
-        title: "Thirst",
-        genre: "Horror/Romance",
-        rating: 7.1,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/51vDru6ihyL._AC_SY679_.jpg",
-        description: "A priest becomes a vampire after a failed medical experiment and struggles with morality and desire. <span class='spoiler'>Spoiler: His lust leads to a deadly and destructive relationship.</span>"
-      },
-      {
-        id: 39,
-        title: "Secret Sunshine",
-        genre: "Drama",
-        rating: 7.5,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/91hxdydIdBL._AC_SY679_.jpg",
-        description: "A grieving woman tries to find peace in a small town, but her trauma and grief consume her. <span class='spoiler'>Spoiler: Her faith is shaken after confronting her son’s killer.</span>"
-      },
-      {
-        id: 40,
-        title: "Lady Vengeance",
-        genre: "Crime/Thriller",
-        rating: 7.6,
-        language: "Korean",
-        image: "https://m.media-amazon.com/images/I/81gk8bLWq2L._AC_SY679_.jpg",
-        description: "After being wrongfully imprisoned, a woman seeks vengeance against the real criminal. <span class='spoiler'>Spoiler: She captures the killer and lets the victims’ families decide his fate.</span>"
-      }
-    ];
-
-    function ratingEmoji(rating) {
-      if (rating >= 9) return '🌟';
-      if (rating >= 8) return '👍';
-      if (rating >= 7) return '👌';
-      return '⭐';
-    }
-
-    const movieGrid = document.getElementById('movieGrid');
-    const searchInput = document.getElementById('searchInput');
-    const sortSelect = document.getElementById('sortSelect');
-    const modal = document.getElementById('movieModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalMeta = document.getElementById('modalMeta');
-    const modalDescription = document.getElementById('modalDescription');
-    const modalClose = document.getElementById('modalClose');
-    const spoilerSound = document.getElementById('spoilerSound');
-
-    function createMovieCard(movie) {
-      const card = document.createElement('div');
-      card.className = 'movie-card';
-      card.tabIndex = 0;
-      card.setAttribute('role', 'listitem');
-      card.setAttribute('aria-label', movie.title);
-
-      const img = document.createElement('img');
-      img.src = movie.image;
-      img.alt = movie.title + " poster";
-
-      const info = document.createElement('div');
-      info.className = 'movie-info';
-
-      const title = document.createElement('div');
-      title.className = 'movie-title';
-      title.textContent = movie.title;
-
-      const meta = document.createElement('div');
-      meta.className = 'movie-meta';
-
-      const genre = document.createElement('div');
-      genre.className = 'genre';
-      genre.textContent = movie.genre;
-
-      const language = document.createElement('div');
-      language.className = 'language';
-      language.textContent = movie.language;
-
-      const rating = document.createElement('div');
-      rating.className = 'rating';
-      rating.textContent = `${movie.rating} ${ratingEmoji(movie.rating)}`;
-
-      meta.appendChild(genre);
-      meta.appendChild(language);
-      meta.appendChild(rating);
-
-      info.appendChild(title);
-      info.appendChild(meta);
-
-      card.appendChild(img);
-      card.appendChild(info);
-
-      card.addEventListener('click', () => openModal(movie));
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openModal(movie);
+    <main>
+        <div class="movie-grid" id="movieGrid" role="list" aria-label="List of movies"></div>
+    </main>
+    <div class="modal" id="movieModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <audio id="spoilerSound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
+            <button class="modal-close" id="modalClose" aria-label="Close modal">&times;</button>
+            <h2 id="modalTitle"></h2>
+            <div class="modal-meta" id="modalMeta"></div>
+            <p class="description" id="modalDescription"></p>
+        </div>
+    </div>
+    <script>
+        const movies = [
+            {
+                id: 1,
+                title: "Inception",
+                genre: "Sci-Fi",
+                rating: 8.8,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/51oD2MsvytL.AC.jpg",
+                description: "A thief who steals corporate secrets through the use of dream-sharing technology. <span class='spoiler'>Spoiler: Cobb reunites with his kids.</span>"
+            },
+            {
+                id: 2,
+                title: "Parasite",
+                genre: "Thriller",
+                rating: 8.6,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/71c05lTE03L.AC_SY679.jpg",
+                description: "Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan."
+            },
+            {
+                id: 3,
+                title: "The Dark Knight",
+                genre: "Action",
+                rating: 9.0,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/51K8ouYrHeL.AC.jpg",
+                description: "Batman raises the stakes in his war on crime. <span class='spoiler'>Spoiler: Joker kills Harvey Dent.</span>"
+            },
+            {
+                id: 4,
+                title: "drishyam",
+                genre: "thriller",
+                rating: 8.3,
+                language: "malayalam",
+                image: "https://upload.wikimedia.org/wikipedia/en/9/9e/DrishyamMovie.jpg",
+                description: "the father ingeniously manipulates evidence and witnesses to make the police believe the missing man is alive, ultimately saving his family from being caught.."
+            },
+            {
+                id: 1,
+                title: "End Game",
+                genre: "sci-fi",
+                rating: 9.0,
+                language: "english",
+                image: "https://themoviespoiler.com/wp-content/uploads/2019/04/avengers_endgame_ver2_xlg.jpg",
+                description: "Iron man will die."
+            },
+            {
+                id: 11,
+                title: "Get Out",
+                genre: "Horror/Thriller",
+                rating: 7.7,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/81bxt5F3sHL.AC_SY679.jpg",
+                description: "A young Black man uncovers a disturbing secret when he meets his white girlfriend’s family. <span class='spoiler'>Spoiler: The family transplants their consciousness into others’ bodies.</span>"
+            },
+            {
+                id: 12,
+                title: "The Sixth Sense",
+                genre: "Thriller/Mystery",
+                rating: 8.1,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/81p+xe8cbnL.AC_SY679.jpg",
+                description: "A child psychologist works with a boy who claims he can see dead people. <span class='spoiler'>Spoiler: The psychologist is dead the whole time.</span>"
+            },
+            {
+                id: 13,
+                title: "Hereditary",
+                genre: "Horror",
+                rating: 7.3,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/91B3yfNl0HL.AC_SY679.jpg",
+                description: "A grieving family is haunted by mysterious and disturbing occurrences. <span class='spoiler'>Spoiler: The family is manipulated by a cult worshiping a demon.</span>"
+            },
+            {
+                id: 14,
+                title: "The Shining",
+                genre: "Horror",
+                rating: 8.4,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/51NpxX3FhuL.AC_SY679.jpg",
+                description: "A man slowly descends into madness while isolated in a haunted hotel with his family. <span class='spoiler'>Spoiler: Jack tries to kill his family under the influence of the hotel's spirits.</span>"
+            },
+            {
+                id: 15,
+                title: "Gone Girl",
+                genre: "Thriller/Crime",
+                rating: 8.1,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/71K9CbNZPsL.AC_SY679.jpg",
+                description: "A husband becomes the prime suspect when his wife mysteriously disappears. <span class='spoiler'>Spoiler: The wife fakes her disappearance to frame her husband.</span>"
+            },
+            {
+                id: 16,
+                title: "Midsommar",
+                genre: "Horror/Drama",
+                rating: 7.1,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/91HTqipFgtL.AC_SY679.jpg",
+                description: "A couple travels to Sweden to attend a rural festival, which turns out to be cult-like. <span class='spoiler'>Spoiler: The festival involves ritual sacrifices.</span>"
+            },
+            {
+                id: 17,
+                title: "Se7en",
+                genre: "Crime/Thriller",
+                rating: 8.6,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/71rtJWdGBPL.AC_SY679.jpg",
+                description: "Two detectives hunt a serial killer who uses the seven deadly sins as motives. <span class='spoiler'>Spoiler: The killer turns himself in and orchestrates the final murders.</span>"
+            },
+            {
+                id: 18,
+                title: "Shutter Island",
+                genre: "Mystery/Thriller",
+                rating: 8.2,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/71ePvN6HqPL.AC_SY679.jpg",
+                description: "A U.S. Marshal investigates a disappearance at a remote asylum. <span class='spoiler'>Spoiler: He is actually a patient at the asylum.</span>"
+            },
+            {
+                id: 19,
+                title: "Black Swan",
+                genre: "Psychological/Drama",
+                rating: 8.0,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/71VhQg3CZFL.AC_SY679.jpg",
+                description: "A ballet dancer struggles with pressure and identity as she prepares for a major role. <span class='spoiler'>Spoiler: Her descent into madness blurs reality and hallucination.</span>"
+            },
+            {
+                id: 20,
+                title: "Oldboy",
+                genre: "Mystery/Thriller",
+                rating: 8.4,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/71d1OSyUKdL.AC_SY679.jpg",
+                description: "A man is imprisoned for 15 years without explanation and seeks revenge after his release. <span class='spoiler'>Spoiler: He was manipulated into an incestuous relationship as revenge.</span>"
+            },
+            {
+                id: 21,
+                title: "Prisoners",
+                genre: "Crime/Thriller",
+                rating: 8.1,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/71VYMT4T54L.AC_SY679.jpg",
+                description: "A father takes matters into his own hands after his daughter and her friend go missing. <span class='spoiler'>Spoiler: The real kidnapper is a woman who has been abducting children for years.</span>"
+            },
+            {
+                id: 22,
+                title: "The Girl with the Dragon Tattoo",
+                genre: "Mystery/Crime",
+                rating: 7.8,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/91lFeqybjeL.AC_SY679.jpg",
+                description: "A journalist and a hacker investigate the disappearance of a wealthy industrialist’s niece. <span class='spoiler'>Spoiler: The girl was not killed — she escaped and started a new life.</span>"
+            },
+            {
+                id: 23,
+                title: "Donnie Darko",
+                genre: "Sci-Fi/Psychological",
+                rating: 8.0,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/51WTd8iCpmL.AC_SY679.jpg",
+                description: "A troubled teenager is plagued by visions of a man in a rabbit suit who manipulates him to commit crimes. <span class='spoiler'>Spoiler: The film explores alternate timelines and ends with Donnie sacrificing himself to restore order.</span>"
+            },
+            {
+                id: 24,
+                title: "The Machinist",
+                genre: "Psychological Thriller",
+                rating: 7.6,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/51We6aRPl5L.AC_SY679.jpg",
+                description: "An industrial worker who hasn't slept in a year begins to doubt his own sanity. <span class='spoiler'>Spoiler: His guilt over a hit-and-run causes his hallucinations and insomnia.</span>"
+            },
+            {
+                id: 25,
+                title: "Requiem for a Dream",
+                genre: "Drama/Psychological",
+                rating: 8.3,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/81wCn2o9tKL.AC_SY679.jpg",
+                description: "Four people spiral into addiction, chasing different dreams and ultimately losing everything. <span class='spoiler'>Spoiler: Each character ends up in a tragic state — prison, amputation, mental hospital.</span>"
+            },
+            {
+                id: 26,
+                title: "Memories of Murder",
+                genre: "Crime/Drama",
+                rating: 8.1,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/71TkM1eIuOL.AC_SY679.jpg",
+                description: "Two detectives try to solve a series of brutal murders in rural South Korea during the 1980s. <span class='spoiler'>Spoiler: The killer is never caught, and the case remains unsolved.</span>"
+            },
+            {
+                id: 27,
+                title: "Enemy",
+                genre: "Thriller/Mystery",
+                rating: 6.9,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/81dJOqUZ8zL.AC_SY679.jpg",
+                description: "A man discovers someone who looks exactly like him and becomes obsessed with tracking him down. <span class='spoiler'>Spoiler: The doppelgänger may be a psychological projection of his own subconscious.</span>"
+            },
+            {
+                id: 28,
+                title: "Coherence",
+                genre: "Sci-Fi/Thriller",
+                rating: 7.2,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/61DpOX6NwFL.AC_SY679.jpg",
+                description: "A dinner party goes awry as cosmic events cause alternate realities to overlap. <span class='spoiler'>Spoiler: Guests start swapping between realities, leading to confusion and paranoia.</span>"
+            },
+            {
+                id: 29,
+                title: "I Saw the Devil",
+                genre: "Horror/Thriller",
+                rating: 7.8,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/91rP-OSWGtL.AC_SY679.jpg",
+                description: "A secret agent seeks revenge on the serial killer who murdered his fiancée. <span class='spoiler'>Spoiler: The agent captures and tortures the killer multiple times before finishing him in a brutal twist.</span>"
+            },
+            {
+                id: 30,
+                title: "The Handmaiden",
+                genre: "Drama/Thriller",
+                rating: 8.1,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/81QgZr9jeNL.AC_SY679.jpg",
+                description: "A con man hires a woman to help him seduce and swindle a wealthy heiress — but things don’t go as planned. <span class='spoiler'>Spoiler: The women double-cross the man and escape together.</span>"
+            },
+            {
+                id: 31,
+                title: "Blue Velvet",
+                genre: "Mystery/Thriller",
+                rating: 7.7,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/81QjMzRnmYL.AC_SY679.jpg",
+                description: "A college student uncovers a dark underworld after finding a severed ear in a field. <span class='spoiler'>Spoiler: A local detective is also involved in the town's corruption.</span>"
+            },
+            {
+                id: 32,
+                title: "Perfect Blue",
+                genre: "Psychological Thriller/Anime",
+                rating: 8.0,
+                language: "Japanese",
+                image: "https://m.media-amazon.com/images/I/81t-k0v9v8L.AC_SY679.jpg",
+                description: "A pop idol turned actress struggles to maintain her sanity as she’s stalked by a fan and haunted by her past. <span class='spoiler'>Spoiler: The real threat is her manager, who has a delusional identity crisis.</span>"
+            },
+            {
+                id: 33,
+                title: "The Others",
+                genre: "Horror/Thriller",
+                rating: 7.6,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/81scsR4OUKL.AC_SY679.jpg",
+                description: "A woman and her children live in a dark, eerie house — but something doesn’t feel right. <span class='spoiler'>Spoiler: They are ghosts, unknowingly haunting the new living family.</span>"
+            },
+            {
+                id: 34,
+                title: "Mother",
+                genre: "Crime/Drama",
+                rating: 7.8,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/61Sk+h+vQyL.AC_SY679.jpg",
+                description: "A mother goes to extreme lengths to prove her son's innocence in a murder case. <span class='spoiler'>Spoiler: She discovers her son is actually guilty, and she covers it up.</span>"
+            },
+            {
+                id: 35,
+                title: "Burning",
+                genre: "Drama/Mystery",
+                rating: 7.5,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/71TWUsabvZL.AC_SY679.jpg",
+                description: "A young man becomes suspicious of his childhood friend's new, mysterious boyfriend. <span class='spoiler'>Spoiler: The boyfriend is implied to be a serial killer — but it’s never confirmed.</span>"
+            },
+            {
+                id: 36,
+                title: "The Double",
+                genre: "Drama/Psychological",
+                rating: 6.5,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/61N6vprK1jL.AC_SY679.jpg",
+                description: "A timid man’s life unravels when his confident doppelgänger begins to take over his world. <span class='spoiler'>Spoiler: The doppelgänger may be a manifestation of his fractured psyche.</span>"
+            },
+            {
+                id: 37,
+                title: "Stoker",
+                genre: "Drama/Thriller",
+                rating: 6.8,
+                language: "English",
+                image: "https://m.media-amazon.com/images/I/81QZZ5aOABL.AC_SY679.jpg",
+                description: "After her father's death, a girl becomes fascinated by her mysterious and charming uncle. <span class='spoiler'>Spoiler: The uncle is a murderer who killed her father.</span>"
+            },
+            {
+                id: 38,
+                title: "Thirst",
+                genre: "Horror/Romance",
+                rating: 7.1,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/51vDru6ihyL.AC_SY679.jpg",
+                description: "A priest becomes a vampire after a failed medical experiment and struggles with morality and desire. <span class='spoiler'>Spoiler: His lust leads to a deadly and destructive relationship.</span>"
+            },
+            {
+                id: 39,
+                title: "Secret Sunshine",
+                genre: "Drama",
+                rating: 7.5,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/91hxdydIdBL.AC_SY679.jpg",
+                description: "A grieving woman tries to find peace in a small town, but her trauma and grief consume her. <span class='spoiler'>Spoiler: Her faith is shaken after confronting her son’s killer.</span>"
+            },
+            {
+                id: 40,
+                title: "Lady Vengeance",
+                genre: "Crime/Thriller",
+                rating: 7.6,
+                language: "Korean",
+                image: "https://m.media-amazon.com/images/I/81gk8bLWq2L.AC_SY679.jpg",
+                description: "After being wrongfully imprisoned, a woman seeks vengeance against the real criminal. <span class='spoiler'>Spoiler: She captures the killer and lets the victims’ families decide his fate.</span>"
+            }
+        ];
+        function ratingEmoji(rating) {
+            if (rating >= 9) return '🌟';
+            if (rating >= 8) return '👍';
+            if (rating >= 7) return '👌';
+            return '⭐';
         }
-      });
-      return card;
-    }
-
-    function renderMovies() {
-      const searchTerm = searchInput.value.trim().toLowerCase();
-      const sortBy = sortSelect.value;
-      const filteredMovies = movies.filter(movie =>
-        movie.title.toLowerCase().includes(searchTerm) ||
-        movie.genre.toLowerCase().includes(searchTerm) ||
-        movie.language.toLowerCase().includes(searchTerm)
-      );
-
-      filteredMovies.sort((a, b) => {
-        if (sortBy === 'title') {
-          return a.title.localeCompare(b.title);
-        } else if (sortBy === 'genre') {
-          return a.genre.localeCompare(b.genre);
-        } else if (sortBy === 'rating') {
-          return b.rating - a.rating;
-        } else if (sortBy === 'language') {
-          return a.language.localeCompare(b.language);
+        const movieGrid = document.getElementById('movieGrid');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const modal = document.getElementById('movieModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMeta = document.getElementById('modalMeta');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalClose = document.getElementById('modalClose');
+        const spoilerSound = document.getElementById('spoilerSound');
+        function createMovieCard(movie) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            card.tabIndex = 0;
+            card.setAttribute('role', 'listitem');
+            card.setAttribute('aria-label', movie.title);
+            const img = document.createElement('img');
+            img.src = movie.image;
+            img.alt = movie.title + " poster";
+            const info = document.createElement('div');
+            info.className = 'movie-info';
+            const title = document.createElement('div');
+            title.className = 'movie-title';
+            title.textContent = movie.title;
+            const meta = document.createElement('div');
+            meta.className = 'movie-meta';
+            const genre = document.createElement('div');
+            genre.className = 'genre';
+            genre.textContent = movie.genre;
+            const language = document.createElement('div');
+            language.className = 'language';
+            language.textContent = movie.language;
+            const rating = document.createElement('div');
+            rating.className = 'rating';
+            rating.textContent = `${movie.rating} ${ratingEmoji(movie.rating)}`;
+            meta.appendChild(genre);
+            meta.appendChild(language);
+            meta.appendChild(rating);
+            info.appendChild(title);
+            info.appendChild(meta);
+            card.appendChild(img);
+            card.appendChild(info);
+            // Add play button
+            const playButton = document.createElement('a');
+            playButton.className = 'play-button';
+            playButton.href = "https://pstream.mov/";
+            playButton.target = "_blank";
+            playButton.setAttribute('aria-label', `Play ${movie.title}`);
+            card.appendChild(playButton);
+            card.addEventListener('click', () => openModal(movie));
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openModal(movie);
+                }
+            });
+            return card;
         }
-        return 0;
-      });
-
-      movieGrid.innerHTML = '';
-      filteredMovies.forEach(movie => {
-        movieGrid.appendChild(createMovieCard(movie));
-      });
-    }
-
-    function spoilerClickHandler(e) {
-      if (e.target.classList.contains('spoiler') && !e.target.classList.contains('revealed')) {
-        e.target.classList.add('revealed');
-        e.target.style.color = '#ff4444';
-        e.target.style.textShadow = '0 0 8px #ff4444';
-        e.target.style.cursor = 'default';
-
-        spoilerSound.currentTime = 0;
-        spoilerSound.play();
-        
-        const emoji = document.createElement('span');
-        emoji.textContent = '👀';
-        emoji.style.marginLeft = '6px';
-        e.target.appendChild(emoji);
-      }
-    }
-
-    function openModal(movie) {
-      modalTitle.textContent = movie.title;
-      modalMeta.innerHTML = `
-        <div class="genre">${movie.genre}</div>
-        <div class="language">${movie.language}</div>
-        <div class="rating">${movie.rating} ${ratingEmoji(movie.rating)}</div>
-      `;
-      modalDescription.innerHTML = movie.description;
-      modalDescription.addEventListener('click', spoilerClickHandler);
-      modal.classList.add('active');
-      modal.setAttribute('aria-hidden', 'false');
-      modalClose.focus();
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-      modal.classList.remove('active');
-      modal.setAttribute('aria-hidden', 'true');
-      modalDescription.removeEventListener('click', spoilerClickHandler);
-      document.body.style.overflow = '';
-      searchInput.focus();
-    }
-
-    modalClose.addEventListener('click', closeModal);
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('active')) {
-        closeModal();
-      }
-    });
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-    searchInput.addEventListener('input', renderMovies);
-    sortSelect.addEventListener('change', renderMovies);
-
-    renderMovies();
-  </script>
+        function renderMovies() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const sortBy = sortSelect.value;
+            const filteredMovies = movies.filter(movie =>
+                movie.title.toLowerCase().includes(searchTerm) ||
+                movie.genre.toLowerCase().includes(searchTerm) ||
+                movie.language.toLowerCase().includes(searchTerm)
+            );
+            filteredMovies.sort((a, b) => {
+                if (sortBy === 'title') {
+                    return a.title.localeCompare(b.title);
+                } else if (sortBy === 'genre') {
+                    return a.genre.localeCompare(b.genre);
+                } else if (sortBy === 'rating') {
+                    return b.rating - a.rating;
+                } else if (sortBy === 'language') {
+                    return a.language.localeCompare(b.language);
+                }
+                return 0;
+            });
+            movieGrid.innerHTML = '';
+            filteredMovies.forEach(movie => {
+                movieGrid.appendChild(createMovieCard(movie));
+            });
+        }
+        function spoilerClickHandler(e) {
+            if (e.target.classList.contains('spoiler') && !e.target.classList.contains('revealed')) {
+                e.target.classList.add('revealed');
+                e.target.style.color = '#ff4444';
+                e.target.style.textShadow = '0 0 8px #ff4444';
+                e.target.style.cursor = 'default';
+                spoilerSound.currentTime = 0;
+                spoilerSound.play();
+                const emoji = document.createElement('span');
+                emoji.textContent = '👀';
+                emoji.style.marginLeft = '6px';
+                e.target.appendChild(emoji);
+            }
+        }
+        function openModal(movie) {
+            modalTitle.textContent = movie.title;
+            modalMeta.innerHTML = `
+                <div class="genre">${movie.genre}</div>
+                <div class="language">${movie.language}</div>
+                <div class="rating">${movie.rating} ${ratingEmoji(movie.rating)}</div>
+            `;
+            modalDescription.innerHTML = movie.description;
+            modalDescription.addEventListener('click', spoilerClickHandler);
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            modalClose.focus();
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+            modalDescription.removeEventListener('click', spoilerClickHandler);
+            document.body.style.overflow = '';
+            searchInput.focus();
+        }
+        modalClose.addEventListener('click', closeModal);
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        searchInput.addEventListener('input', renderMovies);
+        sortSelect.addEventListener('change', renderMovies);
+        renderMovies();
+    </script>
 </body>
 </html>
