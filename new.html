@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twistify - Movie Discovery Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #141414; }
+        .brand-red { color: #E50914; }
+        .card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #232323; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        #modal-content::-webkit-scrollbar-thumb { background: #E50914; }
+        .spoiler-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #ff0000;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .evil-laugh {
+            animation: shake 0.5s ease-in-out infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <!-- Header -->
+    <header class="bg-black bg-opacity-80 backdrop-blur-sm p-4 fixed top-0 left-0 right-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-black brand-red tracking-wider uppercase">Twistify</h1>
+            <div class="relative w-full max-w-xs">
+                <input type="text" id="searchInput" placeholder="Discover amazing movies..." class="w-full bg-gray-800 text-white placeholder-gray-400 border-2 border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:border-red-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 container mx-auto px-4">
+        <section id="main-content">
+            <h2 class="text-2xl font-bold mb-4">Trending Movies & Series</h2>
+            <div id="movie-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
+        </section>
+        
+        <section id="search-results" class="hidden">
+            <h2 class="text-2xl font-bold mb-4">Search Results</h2>
+            <div id="search-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 mt-12 text-gray-500 text-sm">
+        <p>© Twistify. Your trusted movie discovery platform.</p>
+    </footer>
+
+    <!-- Modal -->
+    <div id="spoiler-modal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
+        <div class="bg-[#181818] rounded-lg shadow-xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 id="modal-title" class="text-2xl font-bold"></h3>
+                <button id="close-modal" class="text-white text-3xl hover:text-red-500">&times;</button>
+            </div>
+            <div id="modal-content" class="p-6 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        const movieGrid = document.getElementById('movie-grid');
+        const searchGrid = document.getElementById('search-grid');
+        const searchInput = document.getElementById('searchInput');
+        const mainContentSection = document.getElementById('main-content');
+        const searchResultsSection = document.getElementById('search-results');
+        
+        const spoilerModal = document.getElementById('spoiler-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const closeModalBtn = document.getElementById('close-modal');
+
+        const movieDatabase = [
+            { 
+                title: "The Sixth Sense", 
+                img: "https://images.unsplash.com/photo-1489599735734-79b4fe286040?w=400&h=600&fit=crop",
+                spoiler: "🎬 MAJOR PLOT TWIST REVEALED! 🎬<br><br><span class='spoiler-text'>BRUCE WILLIS WAS DEAD THE ENTIRE TIME! He's been a ghost throughout the whole movie and doesn't realize it until the end! The kid can see dead people, and Bruce Willis is one of them!</span>"
+            },
+            { 
+                title: "Fight Club", 
+                img: "https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=400&h=600&fit=crop",
+                spoiler: "💥 SHOCKING REVELATION! 💥<br><br><span class='spoiler-text'>TYLER DURDEN AND THE NARRATOR ARE THE SAME PERSON! It's all multiple personality disorder! Tyler is just a figment of the narrator's imagination!</span>"
+            },
+            { 
+                title: "Shutter Island", 
+                img: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop",
+                spoiler: "🏥 MIND-BLOWING TWIST! 🏥<br><br><span class='spoiler-text'>LEONARDO DICAPRIO IS THE CRAZY PATIENT! He killed his wife after she drowned their children! The whole investigation is just an elaborate role-play therapy!</span>"
+            },
+            { 
+                title: "Parasite", 
+                img: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=600&fit=crop",
+                spoiler: "🏠 DEVASTATING ENDING! 🏠<br><br><span class='spoiler-text'>The father kills Mr. Park at the birthday party! The family's plan completely falls apart and they lose everything! Ki-taek ends up trapped in the bunker!</span>"
+            },
+            { 
+                title: "Inception", 
+                img: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400&h=600&fit=crop",
+                spoiler: "🌀 REALITY CHECK! 🌀<br><br><span class='spoiler-text'>The spinning top keeps spinning at the end - meaning Cobb might still be in a dream! Also, Mal kills herself because she thinks she's still dreaming!</span>"
+            },
+            { 
+                title: "The Usual Suspects", 
+                img: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=400&h=600&fit=crop",
+                spoiler: "🕵️ ULTIMATE DECEPTION! 🕵️<br><br><span class='spoiler-text'>KEYSER SÖZE IS VERBAL KINT! Kevin Spacey's character was the mastermind all along! He made up the entire story using details from the office bulletin board!</span>"
+            },
+            { 
+                title: "Gone Girl", 
+                img: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&h=600&fit=crop",
+                spoiler: "💔 TWISTED MARRIAGE! 💔<br><br><span class='spoiler-text'>AMY FAKED HER OWN DISAPPEARANCE! She framed her husband for murder but then comes back and kills Desi! She's completely psychotic!</span>"
+            },
+            { 
+                title: "Knives Out", 
+                img: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
+                spoiler: "🔪 MURDER MYSTERY SOLVED! 🔪<br><br><span class='spoiler-text'>Ransom switched the medicine bottles to kill Harlan, but Marta accidentally gave the right doses anyway! Harlan killed himself thinking he was poisoned!</span>"
+            },
+            { 
+                title: "Get Out", 
+                img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+                spoiler: "🧠 HORRIFYING TRUTH! 🧠<br><br><span class='spoiler-text'>The white family transplants their brains into black bodies! Rose is in on it and has done this before! The Sunken Place is real brain surgery preparation!</span>"
+            },
+            { 
+                title: "Interstellar", 
+                img: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=600&fit=crop",
+                spoiler: "🚀 TIME PARADOX REVEALED! 🚀<br><br><span class='spoiler-text'>Cooper becomes the ghost in Murph's room! He's the one sending the messages from the tesseract! The 'they' who built the wormhole are future humans!</span>"
+            },
+            { 
+                title: "The Matrix", 
+                img: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop",
+                spoiler: "💊 REALITY IS A LIE! 💊<br><br><span class='spoiler-text'>The entire world is a computer simulation! Humans are batteries for machines! Neo is 'The One' who can manipulate the Matrix code!</span>"
+            },
+            { 
+                title: "Game of Thrones", 
+                img: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
+                spoiler: "⚔️ EVERYONE DIES! ⚔️<br><br><span class='spoiler-text'>Ned Stark gets beheaded in Season 1! Red Wedding kills Catelyn and Robb! Jon Snow dies but comes back! Daenerys burns King's Landing and gets killed by Jon! Bran becomes king!</span>"
+            },
+            { 
+                title: "Breaking Bad", 
+                img: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=600&fit=crop",
+                spoiler: "💀 TEACHER BECOMES KINGPIN! 💀<br><br><span class='spoiler-text'>Walter White becomes Heisenberg, a meth kingpin! Hank dies discovering the truth! Walter dies in the final episode! Jesse becomes a slave cook!</span>"
+            },
+            { 
+                title: "The Prestige", 
+                img: "https://images.unsplash.com/photo-1489599735734-79b4fe286040?w=400&h=600&fit=crop",
+                spoiler: "🎩 MAGIC TRICK EXPOSED! 🎩<br><br><span class='spoiler-text'>Christian Bale is actually twins sharing one identity! Hugh Jackman clones himself with Tesla's machine and drowns a clone every night!</span>"
+            },
+            { 
+                title: "Titanic", 
+                img: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop",
+                spoiler: "🚢 SHIP SINKS! 🚢<br><br><span class='spoiler-text'>The Titanic hits an iceberg and sinks! Jack freezes to death in the water! There was definitely room for both of them on that door!</span>"
+            },
+            { 
+                title: "Star Wars: Empire Strikes Back", 
+                img: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400&h=600&fit=crop",
+                spoiler: "⭐ FAMILY SECRET! ⭐<br><br><span class='spoiler-text'>DARTH VADER IS LUKE'S FATHER! 'No, I am your father!' Han Solo gets frozen in carbonite! Luke loses his hand!</span>"
+            },
+            { 
+                title: "Avengers: Endgame", 
+                img: "https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=400&h=600&fit=crop",
+                spoiler: "💥 HEROES FALL! 💥<br><br><span class='spoiler-text'>IRON MAN DIES! Black Widow sacrifices herself! Captain America gets old and retires! They defeat Thanos but at a huge cost!</span>"
+            },
+            { 
+                title: "Lost", 
+                img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+                spoiler: "🏝️ ISLAND MYSTERY! 🏝️<br><br><span class='spoiler-text'>They were all dead in the final season's 'flash-sideways'! The island was real but the church meeting was purgatory! Everyone dies at different times!</span>"
+            }
+        ];
+
+        function playEvilLaughter() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+                oscillator.type = 'sawtooth';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            } catch (error) {
+                console.log('Audio not supported');
+            }
+        }
+
+        function showSpoiler(movie) {
+            modalTitle.textContent = movie.title;
+            modalContent.innerHTML = `
+                <div class="text-center evil-laugh">
+                    <div class="mb-6">
+                        <div class="text-6xl mb-4">😈</div>
+                        <h2 class="text-3xl font-black text-red-500 mb-4">MUAHAHAHA!</h2>
+                        <p class="text-xl text-yellow-400 mb-6">You've been SPOILED!</p>
+                    </div>
+                    <div class="bg-black p-6 rounded-lg border-2 border-red-500">
+                        ${movie.spoiler}
+                    </div>
+                    <div class="mt-6 text-gray-400">
+                        <p class="text-lg">🎭 Plot = RUINED FOREVER! 🎭</p>
+                        <p class="text-sm mt-2">Hope you weren't planning to watch this...</p>
+                    </div>
+                </div>
+            `;
+            spoilerModal.classList.remove('hidden');
+            playEvilLaughter();
+            
+            // Auto-close after 8 seconds
+            setTimeout(() => {
+                spoilerModal.classList.add('hidden');
+            }, 8000);
+        }
+
+        function createMovieCard(movie) {
+            const card = document.createElement('div');
+            card.className = 'card bg-gray-900 rounded-lg overflow-hidden cursor-pointer group relative';
+            card.innerHTML = `
+                <img src="${movie.img}" alt="${movie.title}" class="w-full h-80 object-cover transition-opacity duration-300 group-hover:opacity-80">
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                    <h3 class="text-white font-bold text-lg">${movie.title}</h3>
+                    <p class="text-gray-300 text-sm">Click to learn more</p>
+                </div>
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-50">
+                    <div class="text-center">
+                        <div class="text-4xl mb-2">🎬</div>
+                        <p class="text-white font-bold">Discover Story</p>
+                    </div>
+                </div>
+            `;
+            card.addEventListener('click', () => showSpoiler(movie));
+            return card;
+        }
+
+        function displayMovies(movieList, container) {
+            container.innerHTML = '';
+            movieList.forEach(movie => container.appendChild(createMovieCard(movie)));
+        }
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && searchInput.value.trim() !== '') {
+                const searchTerm = searchInput.value.trim();
+                const searchMovie = {
+                    title: searchTerm,
+                    img: `https://images.unsplash.com/photo-1489599735734-79b4fe286040?w=400&h=600&fit=crop&text=${encodeURIComponent(searchTerm)}`,
+                    spoiler: `🎬 SORRY! 🎬<br><br><span class='spoiler-text'>We don't have spoilers for "${searchTerm}" yet, but we've probably ruined enough movies for you today! 😈</span>`
+                };
+                mainContentSection.classList.add('hidden');
+                searchResultsSection.classList.remove('hidden');
+                displayMovies([searchMovie], searchGrid);
+            }
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            spoilerModal.classList.add('hidden');
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !spoilerModal.classList.contains('hidden')) {
+                closeModalBtn.click();
+            }
+        });
+
+        // Initialize with movies
+        displayMovies(movieDatabase, movieGrid);
+    </script>
+</body>
+</html>
